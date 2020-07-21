@@ -1,0 +1,8 @@
+---
+bases:
+- ../../environments.yaml
+
+---
+helmfiles:
+- path: "../../releases/cert-manager/helmfile.yaml"
+- path: "../../releases/ingress-nginx/helmfile.yaml"

@@ -1,0 +1,10 @@
+environments:
+  gke:
+    values:
+      - ../../envs/gke.yaml
+  kops:
+    values:
+      - ../../envs/kops.yaml
+  eks:
+    values:
+      - ../../envs/eks.yaml

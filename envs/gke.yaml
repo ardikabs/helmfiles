@@ -1,0 +1,8 @@
+helm:
+  ingress_nginx:
+    enabled: false
+    version: 2.11.0
+
+  cert_manager:
+    enabled: false
+    version: v0.15.1

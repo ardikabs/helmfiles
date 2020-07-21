@@ -1,0 +1,23 @@
+bases:
+- ../../environments.yaml
+
+---
+repositories:
+- name: "ingress-nginx"
+  url: "https://kubernetes.github.io/ingress-nginx"
+
+---
+templates:
+  ingress-nginx: &ingress-nginx
+    chart: ingress-nginx/ingress-nginx
+    namespace: "ingress-nginx"
+    version: '{{ .Values.helm.ingress_nginx.version }}'
+    installed: {{ .Values.helm.ingress_nginx.enabled | toYaml }}
+
+
+releases:
+- name: ingress-nginx-internal
+  <<: *ingress-nginx
+
+- name: ingress-nginx-external
+  <<: *ingress-nginx

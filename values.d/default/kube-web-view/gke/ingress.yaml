@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  labels:
+    app: kube-web-view
+  name: kube-web-view
+  namespace: default
+spec:
+  rules:
+  - host: gke.clusters.ardikabs.com
+    http:
+      paths:
+      - backend:
+          serviceName: kube-web-view
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - gke.clusters.ardikabs.com
+    secretName: gke-clusters-ardikabs-com-tls

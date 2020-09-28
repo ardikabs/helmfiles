@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+# ---------------------------
+# Script to help you manage your kustomize to meet DRY on managing namespace from helmfile
+# Work with `helmfile hook` on `prepare` and `clean` events
+#
+# Example usage:
+# Kustomize Directory: path/to/your-project/manifests (contain kustomization.yaml)
+#
+# $ helmize COMMAND RELEASE_NAME -n NAMESPACE -k KUSTOMIZE_DIR --chart [CHART_DIR]
+# Event 'prepare':
+#   # It would created a `builds/<release-name>` directory containing fresh kubernetes manifest YAML
+#   # and finally execute it with `kubectl apply -f builds/` from `helmfile hooks`
+# $ helmize build-plain-manifest {{ .Release.Name }} {{ .Release.Namespace }} /path/to/kustomize_dir
+# $ helmize build-plain-manifest kube-web-view default /path/to/kustomize_dir
+#
+#   # it would create a helm charts, that suitable to work with helm-related
+#   # IMPORTANT! To make it readable, please use chart format name prefix-ed with `charts/<your-chart-name>`
+# $ helmize build-chart {{ .Release.Name }} {{ .Release.Namespace }} /path/to/kustomize_dir {{ .Release.Chart }}
+# $ helmize build-chart kube-web-view default /path/to/kustomize_dir charts/kube-web-view
+#
+# ---------------------------
+
+
+cmd=$1
+release_name=$2
+namespace=$3
+kustomize_dir=$4
+chart_dir=$5
+
+chart_name=${chart_dir##*/}
+
+kustomize_build(){
+  if [ ! -d "$kustomize_dir" ]; then
+    echo "directory \"$kustomize_dir\" does not exist. make a kustomize project there in order to generate a local helm chart at $chart_dir/ from it!" 1>&2
+    exit 1
+  fi
+
+  echo "running kustomize" 1>&2
+
+  if output=$(grep -o namespace $kustomize_dir/kustomization.yaml); then
+    if [[ `uname -s` = "Linux" ]]; then
+      SED="sed --in-place='.1'"
+    elif [[ `uname -s` = "Darwin" ]]; then
+      SED="sed -i '.1'"
+    fi
+    SED_ARGS='-e "s/^namespace:.*$/namespace: $namespace/g" $kustomize_dir/kustomization.yaml'
+
+    eval $SED $SED_ARGS
+  else
+    cp $kustomize_dir/{kustomization.yaml,kustomization.yaml.1}
+    echo "namespace: $namespace" >> $kustomize_dir/kustomization.yaml
+  fi
+
+  mkdir -p builds/$release_name
+  kustomize build $kustomize_dir > builds/$release_name/manifests.yaml
+}
+
+build_chart() {
+  mkdir -p $chart_dir/templates
+
+  echo "generating $chart_dir/Chart.yaml" 1>&2
+  cat <<EOF > $chart_dir/Chart.yaml
+apiVersion: v1
+appVersion: "1.0"
+description: A Helm chart for Kubernetes
+name: $chart_name
+version: 0.1.0
+EOF
+
+  echo "generating $chart_dir/templates/NOTES.txt" 1>&2
+
+  cat <<EOF > $chart_dir/templates/NOTES.txt
+Chart $chart_name is a special chart built by integrating kustomize and helm.
+Chart $chart_name has been installed as release {{ .Release.Name }}.
+Run \`helm status {{ .Release.Name }}\` for more information.
+Run \`helm delete --purge {{.Release.Name}}\` to uninstall.
+EOF
+
+  kustomize_build
+
+  cp -f builds/$release_name/manifests.yaml $chart_dir/templates/
+
+  echo "running helm lint" 1>&2
+
+  helm lint $chart_dir
+
+  echo "generated following files:"
+}
+
+cleanup() {
+  # rollback kustomization.yaml to previous state
+  mv -f $kustomize_dir/{kustomization.yaml.1,kustomization.yaml}
+}
+
+main(){
+  if [[ "$(type kustomize >/dev/null 2>&1; echo $?)" -eq 1 ]]; then
+    echo "error kustomize command not found on the \"\$PATH\""
+    exit 1
+  fi
+
+  case "$cmd" in
+    "build-plain-manifest")
+      kustomize_build
+      ;;
+    "build-chart")
+      build_chart
+      ;;
+    "cleanup")
+      cleanup
+      ;;
+    *)
+    echo "unsupported command: $cmd" 1>&2; exit 1
+    ;;
+  esac
+}
+
+main "$@"

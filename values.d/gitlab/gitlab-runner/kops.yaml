@@ -1,0 +1,33 @@
+# References https://gitlab.com/gitlab-org/charts/gitlab-runner/-/blob/master/values.yaml
+gitlabUrl: https://gitlab.com/
+runnerRegistrationToken: "RUNNER_REGISTRATION_TOKEN"
+concurrent: 10
+checkInterval: 10
+
+## For RBAC support:
+rbac:
+  create: true
+  clusterWideAccess: true
+
+runners:
+  tags: "kops"
+
+  image: alpine:latest
+  privileged: true
+
+  builds:
+    cpuRequests: 100m
+    memoryRequests: 128Mi
+
+  services:
+    cpuRequests: 100m
+    memoryRequests: 128Mi
+
+  helpers:
+    cpuRequests: 100m
+    memoryRequests: 128Mi
+
+  serviceAccountName: gitlab-runner-access
+
+metrics:
+  enabled: true

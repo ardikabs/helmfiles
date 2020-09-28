@@ -1,0 +1,40 @@
+---
+bases:
+- ../environments.yaml
+
+---
+repositories:
+- name: "gitlab"
+  url: "https://charts.gitlab.io"
+
+---
+releases:
+- name: gitlab-runner
+  chart: gitlab/gitlab-runner
+  namespace: "gitlab"
+  version: "{{ .Values.gitlab_runner.version }}"
+  labels:
+    app: gitlab-runner
+    appGroup: utility
+    namespace: gitlab
+  installed: {{ .Values.gitlab_runner.install | toYaml }}
+  condition: gitlab_runner.enabled
+  atomic: true
+  values:
+  - "../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/{{ .Environment.Name }}.yaml"
+  hooks:
+  - events: ["prepare", "cleanup"]
+    command: "helmize"
+    showlogs: true
+    args:
+    - "{{`{{if eq .Event.Name \"prepare\"}}build-plain-manifest{{else}}cleanup{{end}}`}}"
+    - "{{`{{.Release.Name}}`}}"
+    - "{{`{{.Release.Namespace}}`}}"
+    - "../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/manifests"
+  - events: ["postsync"]
+    command: "kubectl"
+    showlogs: true
+    args:
+    - "apply"
+    - "-f"
+    - "builds/{{`{{.Release.Name}}`}}/manifests.yaml"

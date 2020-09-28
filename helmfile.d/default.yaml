@@ -1,0 +1,27 @@
+---
+bases:
+- ../environments.yaml
+
+---
+repositories: []
+
+---
+releases:
+- name: kube-web-view
+  chart: charts/kube-web-view
+  namespace: "default"
+  labels:
+    app: kube-web-view
+    appGroup: utility
+    namespace: default
+  installed: {{ .Values.kube_web_view.install | toYaml }}
+  condition: kube_web_view.enabled
+  hooks:
+  - events: ["prepare", "cleanup"]
+    command: "helmize"
+    args:
+    - "{{`{{if eq .Event.Name \"prepare\"}}build-chart{{else}}cleanup{{end}}`}}"
+    - "{{`{{.Release.Name}}`}}"
+    - "{{`{{.Release.Namespace}}`}}"
+    - "../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/{{`{{.Environment.Name}}`}}"
+    - "{{`{{.Release.Chart}}`}}"

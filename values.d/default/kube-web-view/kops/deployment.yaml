@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-web-view
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: kube-web-view
+        args:
+        - --port=8080
+        - --show-container-logs

@@ -1,0 +1,23 @@
+ingress_nginx:
+  enabled: true
+  install: yes
+  version: 2.11.0
+
+cert_manager:
+  enabled: true
+  install: yes
+  version: v0.15.1
+
+gitlab_runner:
+  enabled: true
+  install: yes
+  version: 0.18.1
+
+kubed:
+  enabled: false
+  install: yes
+  version: v0.12.0
+
+kube_web_view:
+  enabled: true
+  install: yes

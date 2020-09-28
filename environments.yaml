@@ -1,10 +1,10 @@
 environments:
   gke:
     values:
-      - ../../envs/gke.yaml
+      - ../environments/gke.yaml
   kops:
     values:
-      - ../../envs/kops.yaml
+      - ../environments/kops.yaml
   eks:
     values:
-      - ../../envs/eks.yaml
+      - ../environments/eks.yaml

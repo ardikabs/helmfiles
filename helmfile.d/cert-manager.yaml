@@ -1,0 +1,27 @@
+---
+bases:
+- ../environments.yaml
+
+---
+repositories:
+- name: "jetstack"
+  url: "https://charts.jetstack.io"
+
+---
+releases:
+- name: cert-manager
+  chart: jetstack/cert-manager
+  namespace: "cert-manager"
+  version: "{{ .Values.cert_manager.version }}"
+  labels:
+    app: cert-manager
+    appGroup: utility
+    namespace: cert-manager
+  installed: {{ .Values.cert_manager.install | toYaml }}
+  condition: cert_manager.enabled
+  atomic: true
+  set:
+  - name: installCRDs
+    value: true
+  values:
+  - ../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/{{ .Environment.Name }}.yaml

@@ -1,0 +1,28 @@
+---
+bases:
+- ../environments.yaml
+
+---
+repositories:
+- name: "ingress-nginx"
+  url: "https://kubernetes.github.io/ingress-nginx"
+
+---
+templates:
+  ingress-nginx: &ingress-nginx
+    chart: ingress-nginx/ingress-nginx
+    namespace: "ingress-nginx"
+    version: '{{ .Values.ingress_nginx.version }}'
+    installed: {{ .Values.ingress_nginx.install | toYaml }}
+    labels:
+      app: ingress-nginx
+      appGroup: utility
+      namespace: ingress-nginx
+    atomic: true
+
+releases:
+- name: ingress-nginx
+  condition: ingress_nginx.enabled
+  values:
+  - "../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/{{ .Environment.Name }}.yaml"
+  <<: *ingress-nginx

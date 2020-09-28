@@ -1,0 +1,37 @@
+image: ardikabs/helmfile-kustomize:3.1.1
+
+stages:
+- sync
+
+before_script:
+- export PATH=${CI_PROJECT_DIR:- $PWD}/bin:$PATH
+
+cluster:eks:
+  stage: sync
+  script:
+    - helmfile --environment ${CI_ENVIRONMENT_NAME} sync --concurrency=10
+  environment:
+    name: eks
+  only:
+  - master
+  when: manual
+
+cluster:gke:
+  stage: sync
+  script:
+    - helmfile --environment ${CI_ENVIRONMENT_NAME} sync --concurrency=10
+  environment:
+    name: gke
+  only:
+  - master
+  when: manual
+
+cluster:kops:
+  stage: sync
+  script:
+    - helmfile --environment ${CI_ENVIRONMENT_NAME} sync --concurrency=10
+  environment:
+    name: kops
+  only:
+  - master
+  when: manual

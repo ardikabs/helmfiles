@@ -1,0 +1,5 @@
+
+enableAnalytics: true
+
+config:
+  clusterName: gke.clusters.ardikabs.com

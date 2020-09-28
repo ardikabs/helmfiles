@@ -1,0 +1,24 @@
+---
+bases:
+- ../environments.yaml
+
+---
+repositories:
+- name: "appscode"
+  url: "https://charts.appscode.com/stable/"
+
+---
+releases:
+- name: kubed
+  chart: appscode/kubed
+  namespace: "utility"
+  version: "{{ .Values.kubed.version }}"
+  labels:
+    app: kubed
+    appGroup: utility
+    namespace: utility
+  installed: {{ .Values.kubed.install | toYaml }}
+  condition: kubed.enabled
+  wait: true
+  values:
+  - "../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/{{ .Environment.Name }}.yaml"

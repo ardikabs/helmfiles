@@ -23,6 +23,8 @@ releases:
   values:
   - "../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/{{ .Environment.Name }}.yaml"
   hooks:
+  # `prepare` event hook will produce a plain manifest stored on `builds/{{`{{.Release.Name}}`}}/manifests.yaml`
+  # `cleanup` event clean up the byproducts of prepare event
   - events: ["prepare", "cleanup"]
     command: "helmize"
     showlogs: true
@@ -31,10 +33,21 @@ releases:
     - "{{`{{.Release.Name}}`}}"
     - "{{`{{.Release.Namespace}}`}}"
     - "../values.d/{{`{{.Release.Namespace}}`}}/{{`{{.Release.Name}}`}}/manifests"
+
+  # `postsync` event hook will apply the generated manifests from `prepare` hooks
   - events: ["postsync"]
     command: "kubectl"
     showlogs: true
     args:
     - "apply"
+    - "-f"
+    - "builds/{{`{{.Release.Name}}`}}/manifests.yaml"
+
+  # `postuninstall` event hook will delete the generated manifests from `prepare` hooks
+  - events: ["postuninstall"]
+    command: "kubectl"
+    showlogs: true
+    args:
+    - "delete"
     - "-f"
     - "builds/{{`{{.Release.Name}}`}}/manifests.yaml"

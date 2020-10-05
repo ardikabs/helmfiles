@@ -1,4 +1,4 @@
-image: ardikabs/helmfile-kustomize:3.1.1
+image: ardikabs/helmfile-kustomize:3.2.0
 
 stages:
 - sync
@@ -9,7 +9,7 @@ before_script:
 cluster:eks:
   stage: sync
   script:
-    - helmfile --environment ${CI_ENVIRONMENT_NAME} sync --concurrency=10
+    - helmfile --environment ${CI_ENVIRONMENT_NAME} apply --concurrency=10
   environment:
     name: eks
   only:
@@ -19,7 +19,7 @@ cluster:eks:
 cluster:gke:
   stage: sync
   script:
-    - helmfile --environment ${CI_ENVIRONMENT_NAME} sync --concurrency=10
+    - helmfile --environment ${CI_ENVIRONMENT_NAME} apply --concurrency=10
   environment:
     name: gke
   only:
@@ -29,7 +29,7 @@ cluster:gke:
 cluster:kops:
   stage: sync
   script:
-    - helmfile --environment ${CI_ENVIRONMENT_NAME} sync --concurrency=10
+    - helmfile --environment ${CI_ENVIRONMENT_NAME} apply --concurrency=10
   environment:
     name: kops
   only:
